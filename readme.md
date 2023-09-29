@@ -207,8 +207,6 @@ sql-mcp-integration/
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Related Documentation
-
-- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - [Azure OpenAI Service](https://docs.microsoft.com/en-us/azure/cognitive-services/openai/)
-- [Azure SQL Database](https://docs.microsoft.com/en-us/azure/azure-sql/)
-- [MCP Server Development](https://modelcontextprotocol.io/docs/server-overview)
+- [Azure MSSQL MCP Server (Preview)](https://devblogs.microsoft.com/azure-sql/introducing-mssql-mcp-server/)
+
