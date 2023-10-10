@@ -89,9 +89,9 @@ export async function createSqlConfig() {
     case 'sql':
     case 'sqlserver':
       // SQL Server authentication
-      console.log(`Connecting to SQL Server: ${process.env.SERVER_NAME}`);
-      console.log(`Database: ${process.env.DATABASE_NAME}`);
-      console.log(`Username: ${process.env.SQL_USERNAME}`);
+      console.error(`Connecting to SQL Server: ${process.env.SERVER_NAME}`);
+      console.error(`Database: ${process.env.DATABASE_NAME}`);
+      console.error(`Username: ${process.env.SQL_USERNAME}`);
       return {
         config: {
           ...baseConfig,
@@ -245,7 +245,7 @@ async function ensureSqlConnection() {
   }
 
   try {
-    console.log('Attempting SQL connection with config:', JSON.stringify({
+    console.error('Attempting SQL connection with config:', JSON.stringify({
       server: config.server,
       database: config.database,
       user: config.user,
@@ -254,7 +254,7 @@ async function ensureSqlConnection() {
     }, null, 2));
     
     globalSqlPool = await sql.connect(config);
-    console.log('SQL connection successful!');
+    console.error('SQL connection successful!');
   } catch (error) {
     console.error('SQL connection failed:', error.message);
     console.error('Full error:', error);
