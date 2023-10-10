@@ -29,6 +29,8 @@ let globalSqlPool = null;
 let globalAccessToken = null;
 let globalTokenExpiresOn = null;
 
+console.log =() => {};
+
 // Function to create SQL config with configurable authentication method
 export async function createSqlConfig() {
   const authMethod = process.env.AUTH_METHOD?.toLowerCase() || 'azure-ad';
