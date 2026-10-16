@@ -18,7 +18,7 @@ import { CreateTableTool } from "./tools/CreateTableTool.js";
 import { CreateIndexTool } from "./tools/CreateIndexTool.js";
 import { ListTableTool } from "./tools/ListTableTool.js";
 import { DropTableTool } from "./tools/DropTableTool.js";
-import { DefaultAzureCredential, InteractiveBrowserCredential } from "@azure/identity";
+import { InteractiveBrowserCredential } from "@azure/identity";
 import { DescribeTableTool } from "./tools/DescribeTableTool.js";
 
 // MSSQL Database connection configuration
@@ -29,11 +29,26 @@ let globalSqlPool = null;
 let globalAccessToken = null;
 let globalTokenExpiresOn = null;
 
+console.log = () => {};
+
+function parseConnectionTimeoutSeconds(): number {
+  const raw = process.env.CONNECTION_TIMEOUT;
+  if (!raw) {
+    return 30;
+  }
+  const parsed = parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 30;
+}
+
 // Function to create SQL config with configurable authentication method
 export async function createSqlConfig() {
   const authMethod = process.env.AUTH_METHOD?.toLowerCase() || 'azure-ad';
   const trustServerCertificate = process.env.TRUST_SERVER_CERTIFICATE?.toLowerCase() === 'true';
-  const connectionTimeout = process.env.CONNECTION_TIMEOUT ? parseInt(process.env.CONNECTION_TIMEOUT, 10) : 30;
+  const connectionTimeout = parseConnectionTimeoutSeconds();
+
+  if (!process.env.SERVER_NAME?.trim() || !process.env.DATABASE_NAME?.trim()) {
+    throw new Error("SERVER_NAME and DATABASE_NAME must be set");
+  }
 
   const baseConfig = {
     server: process.env.SERVER_NAME,
@@ -89,9 +104,11 @@ export async function createSqlConfig() {
     case 'sql':
     case 'sqlserver':
       // SQL Server authentication
-      console.log(`Connecting to SQL Server: ${process.env.SERVER_NAME}`);
-      console.log(`Database: ${process.env.DATABASE_NAME}`);
-      console.log(`Username: ${process.env.SQL_USERNAME}`);
+      if (!process.env.SQL_USERNAME || !process.env.SQL_PASSWORD) {
+        throw new Error("SQL_USERNAME and SQL_PASSWORD are required for sql authentication");
+      }
+      console.error(`Connecting to SQL Server: ${process.env.SERVER_NAME}`);
+      console.error(`Database: ${process.env.DATABASE_NAME}`);
       return {
         config: {
           ...baseConfig,
@@ -245,16 +262,15 @@ async function ensureSqlConnection() {
   }
 
   try {
-    console.log('Attempting SQL connection with config:', JSON.stringify({
+    console.error('Attempting SQL connection with config:', JSON.stringify({
       server: config.server,
       database: config.database,
-      user: config.user,
       encrypt: config.options?.encrypt,
       trustServerCertificate: config.options?.trustServerCertificate
     }, null, 2));
     
     globalSqlPool = await sql.connect(config);
-    console.log('SQL connection successful!');
+    console.error('SQL connection successful!');
   } catch (error) {
     console.error('SQL connection failed:', error.message);
     console.error('Full error:', error);
