@@ -8,6 +8,7 @@ from agents import (
 from agents.mcp import MCPServer, MCPServerStdio
 import os
 import shutil
+import subprocess
 from dotenv import load_dotenv
 from openai import AsyncAzureOpenAI
 import asyncio
@@ -78,7 +79,7 @@ async def run_agent_with_sql_server(sql_server: MCPServer, instructions: str, us
     result = await Runner.run(
         starting_agent=agent,
         input=user_input,
-        max_turns=50
+        max_turns=100
     )
     print(f"SQL Agent execution completed with result: {result.final_output}")
 
@@ -100,11 +101,13 @@ async def main():
         print(f"Error reading instructions file: {e}")
         return
 
-    user_input = "Show me the first 5 rows from the Customer table"
-
+    user_input = "Show me the top 10 products by total sales value, including the product name, category, and the total revenue for each, ordered from highest to lowest revenue"
+    print(f"User input: {user_input}")
+    
     try:
         # Use the specific Node.js MCP server
-
+        # Suppress stderr from the MCP server to hide diagnostic messages
+        
         async with MCPServerStdio(
             name="SQL Server MCP",
             client_session_timeout_seconds=30,
@@ -120,7 +123,8 @@ async def main():
                     "READONLY": READONLY,
                     "CONNECTION_TIMEOUT": CONNECTION_TIMEOUT,
                     "TRUST_SERVER_CERTIFICATE": TRUST_SERVER_CERTIFICATE
-                }
+                },
+                "stderr": subprocess.DEVNULL  # Suppress stderr from Node.js MCP server
             },
             cache_tools_list=True
         ) as sql_server:
